@@ -75,9 +75,32 @@ VL_INLINE_OPT void Vcpu_top::_sequent__TOP__2(Vcpu_top__Syms* __restrict vlSymsp
     IData/*31:0*/ __Vdlyvval__cpu_top__DOT__rf_u__DOT__regs__v0;
     // Body
     __Vdlyvset__cpu_top__DOT__rf_u__DOT__regs__v0 = 0U;
-    vlTOPp->cpu_top__DOT__pc = ((IData)(vlTOPp->reset)
-                                 ? 0U : ((IData)(4U) 
-                                         + vlTOPp->cpu_top__DOT__pc));
+    VL_WRITEF("==== LOGS ====\n");
+    VL_WRITEF("pc: %0#\n",32,vlTOPp->cpu_top__DOT__pc);
+    VL_WRITEF("instr: %x\n",32,vlTOPp->cpu_top__DOT__instr);
+    VL_WRITEF("opcode: %b\n",7,(0x7fU & vlTOPp->cpu_top__DOT__instr));
+    VL_WRITEF("rd: %0#\n",5,(0x1fU & (vlTOPp->cpu_top__DOT__instr 
+                                      >> 7U)));
+    VL_WRITEF("rs1_val: %0#\n",32,vlTOPp->cpu_top__DOT__rs1_val);
+    VL_WRITEF("rs2_val: %0#\n",32,((0U == (0x1fU & 
+                                           (vlTOPp->cpu_top__DOT__instr 
+                                            >> 0x14U)))
+                                    ? 0U : vlTOPp->cpu_top__DOT__rf_u__DOT__regs
+                                   [(0x1fU & (vlTOPp->cpu_top__DOT__instr 
+                                              >> 0x14U))]));
+    VL_WRITEF("imm: %0#\n",32,((0xfffff000U & ((- (IData)(
+                                                          (1U 
+                                                           & (vlTOPp->cpu_top__DOT__instr 
+                                                              >> 0x1fU)))) 
+                                               << 0xcU)) 
+                               | (0xfffU & (vlTOPp->cpu_top__DOT__instr 
+                                            >> 0x14U))));
+    VL_WRITEF("alu_out: %0#\n",32,vlTOPp->cpu_top__DOT__alu_out);
+    VL_WRITEF("reg_we: %b\n",1,vlTOPp->cpu_top__DOT__reg_we);
+    VL_WRITEF("dbg_x1: %0#\n",32,vlTOPp->dbg_x1);
+    VL_WRITEF("dbg_x2: %0#\n",32,vlTOPp->dbg_x2);
+    VL_WRITEF("dbg_x3: %0#\n",32,vlTOPp->dbg_x3);
+    VL_WRITEF("==============\n");
     if (((IData)(vlTOPp->cpu_top__DOT__reg_we) & (0U 
                                                   != 
                                                   (0x1fU 
@@ -90,38 +113,200 @@ VL_INLINE_OPT void Vcpu_top::_sequent__TOP__2(Vcpu_top__Syms* __restrict vlSymsp
             = (0x1fU & (vlTOPp->cpu_top__DOT__instr 
                         >> 7U));
     }
+    vlTOPp->cpu_top__DOT__pc = ((IData)(vlTOPp->reset)
+                                 ? 0U : ((IData)(4U) 
+                                         + vlTOPp->cpu_top__DOT__pc));
     if (__Vdlyvset__cpu_top__DOT__rf_u__DOT__regs__v0) {
         vlTOPp->cpu_top__DOT__rf_u__DOT__regs[__Vdlyvdim0__cpu_top__DOT__rf_u__DOT__regs__v0] 
             = __Vdlyvval__cpu_top__DOT__rf_u__DOT__regs__v0;
     }
-    vlTOPp->pc_dbg = vlTOPp->cpu_top__DOT__pc;
-    vlTOPp->cpu_top__DOT__instr = vlTOPp->cpu_top__DOT__imem_u__DOT__mem
-        [(0xffU & (vlTOPp->cpu_top__DOT__pc >> 2U))];
     vlTOPp->dbg_x1 = vlTOPp->cpu_top__DOT__rf_u__DOT__regs
         [1U];
     vlTOPp->dbg_x2 = vlTOPp->cpu_top__DOT__rf_u__DOT__regs
         [2U];
     vlTOPp->dbg_x3 = vlTOPp->cpu_top__DOT__rf_u__DOT__regs
         [3U];
+    vlTOPp->pc_dbg = vlTOPp->cpu_top__DOT__pc;
+    vlTOPp->cpu_top__DOT__instr = vlTOPp->cpu_top__DOT__imem_u__DOT__mem
+        [(0xffU & (vlTOPp->cpu_top__DOT__pc >> 2U))];
     vlTOPp->cpu_top__DOT__reg_we = 0U;
-    if ((0x13U == (0x7fU & vlTOPp->cpu_top__DOT__instr))) {
+    if ((0x33U == (0x7fU & vlTOPp->cpu_top__DOT__instr))) {
         vlTOPp->cpu_top__DOT__reg_we = 1U;
+    } else {
+        if ((0x13U == (0x7fU & vlTOPp->cpu_top__DOT__instr))) {
+            vlTOPp->cpu_top__DOT__reg_we = 1U;
+        }
     }
-    vlTOPp->cpu_top__DOT__alu_out = (((0U == (0x1fU 
-                                              & (vlTOPp->cpu_top__DOT__instr 
-                                                 >> 0xfU)))
-                                       ? 0U : vlTOPp->cpu_top__DOT__rf_u__DOT__regs
-                                      [(0x1fU & (vlTOPp->cpu_top__DOT__instr 
-                                                 >> 0xfU))]) 
-                                     + ((0xfffff000U 
-                                         & ((- (IData)(
-                                                       (1U 
-                                                        & (vlTOPp->cpu_top__DOT__instr 
-                                                           >> 0x1fU)))) 
-                                            << 0xcU)) 
-                                        | (0xfffU & 
-                                           (vlTOPp->cpu_top__DOT__instr 
-                                            >> 0x14U))));
+    vlTOPp->cpu_top__DOT__rs1_val = ((0U == (0x1fU 
+                                             & (vlTOPp->cpu_top__DOT__instr 
+                                                >> 0xfU)))
+                                      ? 0U : vlTOPp->cpu_top__DOT__rf_u__DOT__regs
+                                     [(0x1fU & (vlTOPp->cpu_top__DOT__instr 
+                                                >> 0xfU))]);
+    vlTOPp->cpu_top__DOT__alu_op = 0U;
+    if ((0x33U == (0x7fU & vlTOPp->cpu_top__DOT__instr))) {
+        vlTOPp->cpu_top__DOT__alu_op = 2U;
+    } else {
+        if ((0x13U == (0x7fU & vlTOPp->cpu_top__DOT__instr))) {
+            vlTOPp->cpu_top__DOT__alu_op = 2U;
+        }
+    }
+    vlTOPp->cpu_top__DOT__alu_src = 0U;
+    if ((0x33U == (0x7fU & vlTOPp->cpu_top__DOT__instr))) {
+        vlTOPp->cpu_top__DOT__alu_src = 0U;
+    } else {
+        if ((0x13U == (0x7fU & vlTOPp->cpu_top__DOT__instr))) {
+            vlTOPp->cpu_top__DOT__alu_src = 1U;
+        }
+    }
+    vlTOPp->cpu_top__DOT__alu_control = ((0U == (IData)(vlTOPp->cpu_top__DOT__alu_op))
+                                          ? 0U : ((1U 
+                                                   == (IData)(vlTOPp->cpu_top__DOT__alu_op))
+                                                   ? 1U
+                                                   : 
+                                                  ((2U 
+                                                    == (IData)(vlTOPp->cpu_top__DOT__alu_op))
+                                                    ? 
+                                                   ((0x4000U 
+                                                     & vlTOPp->cpu_top__DOT__instr)
+                                                     ? 
+                                                    ((0x2000U 
+                                                      & vlTOPp->cpu_top__DOT__instr)
+                                                      ? 
+                                                     ((0x1000U 
+                                                       & vlTOPp->cpu_top__DOT__instr)
+                                                       ? 2U
+                                                       : 3U)
+                                                      : 
+                                                     ((0x1000U 
+                                                       & vlTOPp->cpu_top__DOT__instr)
+                                                       ? 
+                                                      ((0x20U 
+                                                        == 
+                                                        (0x7fU 
+                                                         & (vlTOPp->cpu_top__DOT__instr 
+                                                            >> 0x19U)))
+                                                        ? 7U
+                                                        : 6U)
+                                                       : 4U))
+                                                     : 
+                                                    ((0x2000U 
+                                                      & vlTOPp->cpu_top__DOT__instr)
+                                                      ? 0U
+                                                      : 
+                                                     ((0x1000U 
+                                                       & vlTOPp->cpu_top__DOT__instr)
+                                                       ? 5U
+                                                       : 
+                                                      ((0x20U 
+                                                        == 
+                                                        (0x7fU 
+                                                         & (vlTOPp->cpu_top__DOT__instr 
+                                                            >> 0x19U)))
+                                                        ? 1U
+                                                        : 0U))))
+                                                    : 0U)));
+    vlTOPp->cpu_top__DOT__alu_b = ((IData)(vlTOPp->cpu_top__DOT__alu_src)
+                                    ? ((0xfffff000U 
+                                        & ((- (IData)(
+                                                      (1U 
+                                                       & (vlTOPp->cpu_top__DOT__instr 
+                                                          >> 0x1fU)))) 
+                                           << 0xcU)) 
+                                       | (0xfffU & 
+                                          (vlTOPp->cpu_top__DOT__instr 
+                                           >> 0x14U)))
+                                    : ((0U == (0x1fU 
+                                               & (vlTOPp->cpu_top__DOT__instr 
+                                                  >> 0x14U)))
+                                        ? 0U : vlTOPp->cpu_top__DOT__rf_u__DOT__regs
+                                       [(0x1fU & (vlTOPp->cpu_top__DOT__instr 
+                                                  >> 0x14U))]));
+    vlTOPp->cpu_top__DOT__alu_out = ((8U & (IData)(vlTOPp->cpu_top__DOT__alu_control))
+                                      ? ((4U & (IData)(vlTOPp->cpu_top__DOT__alu_control))
+                                          ? ((2U & (IData)(vlTOPp->cpu_top__DOT__alu_control))
+                                              ? 0U : 
+                                             ((1U & (IData)(vlTOPp->cpu_top__DOT__alu_control))
+                                               ? ((vlTOPp->cpu_top__DOT__rs1_val 
+                                                   > vlTOPp->cpu_top__DOT__alu_b)
+                                                   ? 1U
+                                                   : 0U)
+                                               : ((vlTOPp->cpu_top__DOT__rs1_val 
+                                                   >= vlTOPp->cpu_top__DOT__alu_b)
+                                                   ? 1U
+                                                   : 0U)))
+                                          : ((2U & (IData)(vlTOPp->cpu_top__DOT__alu_control))
+                                              ? ((1U 
+                                                  & (IData)(vlTOPp->cpu_top__DOT__alu_control))
+                                                  ? 
+                                                 ((vlTOPp->cpu_top__DOT__rs1_val 
+                                                   != vlTOPp->cpu_top__DOT__alu_b)
+                                                   ? 1U
+                                                   : 0U)
+                                                  : 
+                                                 ((vlTOPp->cpu_top__DOT__rs1_val 
+                                                   == vlTOPp->cpu_top__DOT__alu_b)
+                                                   ? 1U
+                                                   : 0U))
+                                              : ((1U 
+                                                  & (IData)(vlTOPp->cpu_top__DOT__alu_control))
+                                                  ? 
+                                                 ((vlTOPp->cpu_top__DOT__rs1_val 
+                                                   <= vlTOPp->cpu_top__DOT__alu_b)
+                                                   ? 1U
+                                                   : 0U)
+                                                  : 
+                                                 ((vlTOPp->cpu_top__DOT__rs1_val 
+                                                   < vlTOPp->cpu_top__DOT__alu_b)
+                                                   ? 1U
+                                                   : 0U))))
+                                      : ((4U & (IData)(vlTOPp->cpu_top__DOT__alu_control))
+                                          ? ((2U & (IData)(vlTOPp->cpu_top__DOT__alu_control))
+                                              ? ((1U 
+                                                  & (IData)(vlTOPp->cpu_top__DOT__alu_control))
+                                                  ? 
+                                                 ((0x1fU 
+                                                   >= vlTOPp->cpu_top__DOT__alu_b)
+                                                   ? 
+                                                  (vlTOPp->cpu_top__DOT__rs1_val 
+                                                   >> vlTOPp->cpu_top__DOT__alu_b)
+                                                   : 0U)
+                                                  : 
+                                                 ((0x1fU 
+                                                   >= vlTOPp->cpu_top__DOT__alu_b)
+                                                   ? 
+                                                  (vlTOPp->cpu_top__DOT__rs1_val 
+                                                   >> vlTOPp->cpu_top__DOT__alu_b)
+                                                   : 0U))
+                                              : ((1U 
+                                                  & (IData)(vlTOPp->cpu_top__DOT__alu_control))
+                                                  ? 
+                                                 ((0x1fU 
+                                                   >= vlTOPp->cpu_top__DOT__alu_b)
+                                                   ? 
+                                                  (vlTOPp->cpu_top__DOT__rs1_val 
+                                                   << vlTOPp->cpu_top__DOT__alu_b)
+                                                   : 0U)
+                                                  : 
+                                                 (vlTOPp->cpu_top__DOT__rs1_val 
+                                                  ^ vlTOPp->cpu_top__DOT__alu_b)))
+                                          : ((2U & (IData)(vlTOPp->cpu_top__DOT__alu_control))
+                                              ? ((1U 
+                                                  & (IData)(vlTOPp->cpu_top__DOT__alu_control))
+                                                  ? 
+                                                 (vlTOPp->cpu_top__DOT__rs1_val 
+                                                  | vlTOPp->cpu_top__DOT__alu_b)
+                                                  : 
+                                                 (vlTOPp->cpu_top__DOT__rs1_val 
+                                                  & vlTOPp->cpu_top__DOT__alu_b))
+                                              : ((1U 
+                                                  & (IData)(vlTOPp->cpu_top__DOT__alu_control))
+                                                  ? 
+                                                 (vlTOPp->cpu_top__DOT__rs1_val 
+                                                  - vlTOPp->cpu_top__DOT__alu_b)
+                                                  : 
+                                                 (vlTOPp->cpu_top__DOT__rs1_val 
+                                                  + vlTOPp->cpu_top__DOT__alu_b)))));
 }
 
 void Vcpu_top::_eval(Vcpu_top__Syms* __restrict vlSymsp) {

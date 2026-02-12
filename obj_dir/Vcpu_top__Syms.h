@@ -7,7 +7,7 @@
 #ifndef _VCPU_TOP__SYMS_H_
 #define _VCPU_TOP__SYMS_H_  // guard
 
-#include "verilated.h"
+#include "verilated_heavy.h"
 
 // INCLUDE MODULE CLASSES
 #include "Vcpu_top.h"

@@ -8,7 +8,7 @@
 #ifndef _VCPU_TOP_H_
 #define _VCPU_TOP_H_  // guard
 
-#include "verilated.h"
+#include "verilated_heavy.h"
 
 //==========
 
@@ -33,10 +33,15 @@ VL_MODULE(Vcpu_top) {
     
     // LOCAL SIGNALS
     // Internals; generally not touched by application code
+    CData/*0:0*/ cpu_top__DOT__alu_src;
+    CData/*1:0*/ cpu_top__DOT__alu_op;
+    CData/*3:0*/ cpu_top__DOT__alu_control;
     CData/*0:0*/ cpu_top__DOT__reg_we;
+    IData/*31:0*/ cpu_top__DOT__alu_b;
     IData/*31:0*/ cpu_top__DOT__pc;
     IData/*31:0*/ cpu_top__DOT__instr;
     IData/*31:0*/ cpu_top__DOT__alu_out;
+    IData/*31:0*/ cpu_top__DOT__rs1_val;
     IData/*31:0*/ cpu_top__DOT__imem_u__DOT__mem[256];
     IData/*31:0*/ cpu_top__DOT__rf_u__DOT__regs[32];
     
