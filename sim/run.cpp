@@ -17,7 +17,7 @@ int main(int argc, char **argv) {
     top->reset = 1;
     top->clk = 0;
 
-    for (int i = 0; i < 100; i++) {
+    for (int i = 0; i < 200; i++) {
         if (i == 2) top->reset = 0;
 
         top->clk = !top->clk;

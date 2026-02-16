@@ -1,20 +1,20 @@
-module imem (
+// handles the program which has to run
+
+module instruction_input_memory (
     input logic [31:0] addr, // the address of the instruction
     output logic [31:0] instr // the 32 bit instruction, which is returned
 );
 
     logic [31:0] mem [0:255]; // this is the storage of memory, has 256 slots, and each slot is 32 bits wide. It can hold 256 instructions.
 
-    initial begin 
-        // These are the list of pre-loaded instructions right now.
-        // 32'h00000013 = NOP (no operation, do nothing, for now)
-       // mem[0] = 32'h00000013; 
-        //mem[1] = 32'h00000013;
-        //mem[2] = 32'h00000013;
+    initial begin
         mem[0] = 32'h00500093; // addi x1, x0, 5
-        mem[1] = 32'h00308113; // addi x2, x1, 3
-        mem[2] = 32'h00210193; // addi x3, x2, 2
+        mem[1] = 32'h008002EF; // jal  x5, func (pc+8)
+        mem[2] = 32'h0000006F; // jal  x0, 0 (loop forever)
+        mem[3] = 32'h00A08093; // addi x1, x1, 10
+        mem[4] = 32'h00028067; // jalr x0, x5, 0 (return)
     end
+
 
     // in 32 bit systems, instructions are 4 bytes long, so each instruction takes 4 bytes. here mem[0] is on address 0, but mem[1] is on address 4 and mem[2] is on address 8.
     // so as the instruction is 4 bytes long, the end of it's binary address is with 00. so we're simply stripping off the last two 0s in this code.

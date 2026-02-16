@@ -15,6 +15,9 @@ module alu_control_unit (
                     3'b000: alu_control = (funct7 == 7'b0100000) ? 4'b0001 : 4'b0000; // sub/add
                     3'b111: alu_control = 4'b0010; // and
                     3'b110: alu_control = 4'b0011; // or
+                    3'b010: alu_control = 4'b1000; // SLT
+                    3'b011: alu_control = 4'b1010; // EQ (custom mapping)
+
                     3'b100: alu_control = 4'b0100; // xor
                     3'b001: alu_control = 4'b0101; // sll
                     3'b101: alu_control = (funct7 == 7'b0100000) ? 4'b0111 : 4'b0110; // sra/srl
