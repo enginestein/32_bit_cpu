@@ -98,7 +98,6 @@ int main(int argc, char **argv) {
         if (pc == 0x1C) {
             snap_x1 = x1;
             snap_x2 = x2;
-            // one extra tick so trap latches
             top->clk = !top->clk; top->eval(); tfp->dump(tick + 1);
             top->clk = !top->clk; top->eval(); tfp->dump(tick + 2);
             done = true;

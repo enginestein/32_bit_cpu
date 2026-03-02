@@ -1,7 +1,12 @@
-// general logic decoder is what takes a binary number, and turns it into a signal. A single signal.
-// and this decoder, is an instruction decoder. which takes a big chunk of machine code, splits it into smaller pieces and sends it to the CPU to allocate regsters.
+/*
 
+    - Binary Decoder -
 
+    Here the instruction is taken from the imem, that instruction is taken by the decoder and gets split in various sub-instructions.
+    These sub-instructions are used to tell the CPU what to do, where to do and how to do. It returns various logics, one major 
+    logic is a 7 bit opcode which is the type of instruction the CPU has to execute.
+
+*/
 
 module decoder (
     

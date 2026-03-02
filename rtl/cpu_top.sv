@@ -3,12 +3,15 @@ module cpu_top (
     input  logic reset,
     output logic [31:0] pc_dbg,
     output logic [31:0] dbg_x1,
+    output logic [31:0] dbg_mem0,
+output logic [31:0] dbg_mem4,
     output logic [31:0] dbg_x2,
     output logic [31:0] dbg_x3
 );
 /* verilator lint_off EOFNEWLINE */
 /* verilator lint_off PROCASSINIT */
 /* verilator lint_off PINMISSING */
+/* verilator lint_off WIDTHEXPAND */
 /* verilator lint_off UNDRIVEN */
 /* verilator lint_off IMPLICIT */
 /* verilator lint_off BLKSEQ */
@@ -35,24 +38,29 @@ logic branch_taken;
 logic [31:0] branch_target;
 
 
-
+assign dbg_mem0 = dmem.mem[0];
+assign dbg_mem4 = dmem.mem[1]; // because word index 1 = address 4
     integer cycle = 0;
 
-    function string alu_op_name(input logic [3:0] ctrl);
-        case (ctrl)
-            4'b0000: alu_op_name = "ADD";
-            4'b0001: alu_op_name = "SUB";
-            4'b0010: alu_op_name = "AND";
-            4'b0011: alu_op_name = "OR";
-            4'b0100: alu_op_name = "XOR";
-            4'b0101: alu_op_name = "SLL";
-            4'b0110: alu_op_name = "SRL";
-            4'b0111: alu_op_name = "SRA";
-            4'b1000: alu_op_name = "SLT";
-            4'b1001: alu_op_name = "SLTU";
-            default: alu_op_name = "UNKNOWN";
-        endcase
-    endfunction
+function string alu_op_name(input logic [3:0] ctrl);
+    case (ctrl)
+        4'b0000: alu_op_name = "ADD";
+        4'b0001: alu_op_name = "SUB";
+        4'b0010: alu_op_name = "AND";
+        4'b0011: alu_op_name = "OR";
+        4'b0100: alu_op_name = "XOR";
+        4'b0101: alu_op_name = "SLL";
+        4'b0110: alu_op_name = "SRL";
+        4'b0111: alu_op_name = "SRA";
+        4'b1000: alu_op_name = "SLT";
+        4'b1001: alu_op_name = "SLTU";
+        4'b1010: alu_op_name = "BEQ";
+        4'b1011: alu_op_name = "BNE";
+        4'b1100: alu_op_name = "BGE";
+        4'b1101: alu_op_name = "BGT";
+        default: alu_op_name = "UNKNOWN";
+    endcase
+endfunction
 
 pc pc_u (
     .clk(clk),

@@ -1,4 +1,4 @@
-    module alu (
+module alu (
         input  logic [31:0] a,
         input  logic [31:0] b,
         input  logic [3:0]  alu_control,
@@ -34,4 +34,4 @@
             endcase 
         end
 
-    endmodule
+endmodule

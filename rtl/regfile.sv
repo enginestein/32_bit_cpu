@@ -1,4 +1,8 @@
-// the special file where the outputs from the decoder are sent.
+/*
+    - Register File -
+
+    This returns debug x1, x2 and x3 which are the operands. Takes data from decoder and ALU. Returns rd1 and rd2 as well.
+*/
 
 module regfile (
     input logic clk,

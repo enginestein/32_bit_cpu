@@ -1,4 +1,10 @@
+/*
+    - Immediate Generator -
 
+    This file generates an appropriate 32 bit immediate using the instruction by identifying what type of instruction is.
+    This immediate can be used or sometimes the registers can be used. The immediate helps in identifying the branch target as well.
+
+*/
 
 module imm_gen (
     input  logic [31:0] instr,

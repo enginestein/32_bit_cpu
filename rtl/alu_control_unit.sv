@@ -1,3 +1,7 @@
+/*
+    - ALU Control Unit -
+*/
+
 module alu_control_unit (
     input  logic [1:0] alu_op,
     input  logic [2:0] funct3,
