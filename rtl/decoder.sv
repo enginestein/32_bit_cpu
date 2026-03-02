@@ -1,6 +1,8 @@
 // general logic decoder is what takes a binary number, and turns it into a signal. A single signal.
 // and this decoder, is an instruction decoder. which takes a big chunk of machine code, splits it into smaller pieces and sends it to the CPU to allocate regsters.
 
+
+
 module decoder (
     
     input logic [31:0] instr, // The output instruction which we sent from our memory module, ROM.
@@ -12,6 +14,10 @@ module decoder (
     output logic [6:0] funct7
    
 );
+
+/* verilator lint_off EOFNEWLINE */
+/* verilator lint_off PROCASSINIT */
+/* verilator lint_off BLKSEQ */ 
 
 // this part splits the instruction.
 // lets say, the instr is 000000 00010 00001 000 00011 0110011

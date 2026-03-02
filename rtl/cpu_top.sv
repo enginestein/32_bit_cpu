@@ -6,7 +6,11 @@ module cpu_top (
     output logic [31:0] dbg_x2,
     output logic [31:0] dbg_x3
 );
-
+/* verilator lint_off EOFNEWLINE */
+/* verilator lint_off PROCASSINIT */
+/* verilator lint_off PINMISSING */
+/* verilator lint_off UNDRIVEN */
+/* verilator lint_off IMPLICIT */
 /* verilator lint_off BLKSEQ */
     logic alu_src;
 logic [1:0] alu_op;
@@ -20,7 +24,12 @@ logic [1:0] alu_op;
     logic [2:0] funct3; // extra bits to distinguish between instructions
     logic [6:0] funct7; // extra bits to distinguish between instructions
     logic mem_we, mem_re, mem_to_reg;
+    logic [2:0] mem_funct3;
+    logic trap;
+logic [3:0] trap_cause;
+logic [31:0] pc_next;
     logic [31:0] mem_data;
+    logic misaligned;
 logic branch;
 logic branch_taken;
 logic [31:0] branch_target;
@@ -48,8 +57,7 @@ logic [31:0] branch_target;
 pc pc_u (
     .clk(clk),
     .reset(reset),
-    .branch_taken(branch_taken),
-    .branch_target(branch_target),
+    .pc_next(pc_next),
     .pc_out(pc)
 );
 
@@ -82,11 +90,14 @@ pc pc_u (
     logic jalr;
     assign jalr = (opcode == 7'b1100111);
 
-    assign branch_taken = jal || jalr ||
-        (branch && (
-            (funct3 == 3'b000 && alu_out == 32'd0) ||
-            (funct3 == 3'b001 && alu_out != 32'd0)
-        ));
+   assign branch_taken = jal || jalr || (branch && (
+    (funct3 == 3'b000 && alu_out == 32'd0)  ||  // BEQ
+    (funct3 == 3'b001 && alu_out != 32'd0)  ||  // BNE
+    (funct3 == 3'b100 && alu_out == 32'd1)  ||  // BLT
+    (funct3 == 3'b101 && alu_out == 32'd0)  ||  // BGE
+    (funct3 == 3'b110 && alu_out == 32'd1)  ||  // BLTU
+    (funct3 == 3'b111 && alu_out == 32'd0)      // BGEU
+));
 
     assign branch_target =
     jal  ? (pc + imm) :
@@ -100,20 +111,28 @@ pc pc_u (
 
 control_unit ctrl_u (
     .opcode(opcode),
+    .instr(instr),
+    .funct3(funct3),
     .reg_we(reg_we),
     .alu_src(alu_src),
     .alu_op(alu_op),
     .mem_we(mem_we),
     .mem_re(mem_re),
     .mem_to_reg(mem_to_reg),
-    .branch(branch)
+    .mem_funct3(mem_funct3),
+    .branch(branch),
+    .trap(trap),
+    .trap_cause(trap_cause)
 );
 
 
     dmem dmem(
         .clk(clk),
         .we(mem_we),
+        .funct3(funct3),
+        .misaligned(misaligned),
         .addr(alu_out),
+        .re(mem_re),
         .wd(rs2_val),
         .rd(mem_data)
     );
@@ -123,6 +142,15 @@ alu_control_unit alu_ctrl_u (
     .funct3(funct3),
     .funct7(funct7),
     .alu_control(alu_control)
+);
+
+trap trap_u (
+    .clk(clk),
+    .trap(trap),
+    .trap_cause(trap_cause),
+    .pc_current(pc),
+    .pc_normal_next(next_pc),
+    .pc_next(pc_next)
 );
 
     logic [31:0] alu_a;
@@ -144,14 +172,17 @@ alu_control_unit alu_ctrl_u (
     (mem_to_reg) ? mem_data :
     alu_out;
 
+logic reg_we_final;
+
+assign reg_we_final = trap ? 1'b0 : reg_we;
+
     regfile rf_u (
         .clk(clk),
-         .we(reg_we),
          .rs1(rs1),
          .rs2(rs2),
          .rd(rd),
         .wd(writeback_data),
-
+.we(reg_we_final),
          .rd1(rs1_val),
          .rd2(rs2_val),
          .dbg_x1(dbg_x1),
@@ -171,6 +202,14 @@ always @(posedge clk) begin
     $display("======================================================================");
     $display("                      CYCLE %0d", cycle);
     $display("======================================================================");
+
+    if (misaligned) begin
+        $display("==========================================");
+        $display(" MISALIGNED MEMORY ACCESS DETECTED ");
+        $display(" funct3  : %03b", funct3);
+        $display("==========================================");
+    end
+
 
     // ---------------- PC ----------------
     $display("PC STAGE");
@@ -261,10 +300,10 @@ always @(posedge clk) begin
 
 
     // ---------------- REGISTER SNAPSHOT ----------------
-    $display("REGISTER SNAPSHOT");
-    $display("  x1 : %0d", dbg_x1);
-    $display("  x2 : %0d", dbg_x2);
-    $display("  x3 : %0d", dbg_x3);
+$display("REGISTER SNAPSHOT");
+$display("  x1 : %0d", rf_u.regs[1]);
+$display("  x2 : %0d", rf_u.regs[2]);
+$display("  x3 : %0d", rf_u.regs[3]);
 
     $display("  Next PC     : %0d ", next_pc);
     $display("======================================================================");

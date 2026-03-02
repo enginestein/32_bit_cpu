@@ -1,24 +1,22 @@
-// Program Counter (PC) Module
-// This holds the memory address of the next instructino, represented by numbers here 1-4
-// This module increments the program counter by 4 on each clock cycle.
-// It resets to 0 when the reset signal is high.
-// The limit of the pc_out is 32 bits.
-
 module pc (
-    input logic clk, 
-    input logic reset, 
-    input logic branch_taken,
-    input logic [31:0] branch_target,
+    input logic clk,
+    input logic reset,
+    input logic [31:0] pc_next,
     output logic [31:0] pc_out
-); 
+);
 
-    always_ff @(posedge clk) begin 
-        if (reset)
-            pc_out <= 32'd0;
-        else if (branch_taken)
-            pc_out <= branch_target;
-        else 
-            pc_out <= pc_out + 32'd4; // 32'd4 = 4
-    end
+/* verilator lint_off EOFNEWLINE */
+/* verilator lint_off PROCASSINIT */
+/* verilator lint_off PINMISSING */
+/* verilator lint_off UNDRIVEN */
+/* verilator lint_off IMPLICIT */
+/* verilator lint_off BLKSEQ */
+
+always_ff @(posedge clk) begin
+    if (reset)
+        pc_out <= 32'd0;
+    else
+        pc_out <= pc_next;
+end
 
 endmodule
