@@ -3,7 +3,7 @@
 module tb_alu;
 
     logic [31:0] a, b;
-    logic [3:0]  alu_control;
+    logic [4:0]  alu_control;
     logic [31:0] y;
 
     alu dut (
@@ -26,23 +26,23 @@ module tb_alu;
 
 initial begin
     // ADD
-    a = 10; b = 5; alu_control = 4'b0000;
+    a = 10; b = 5; alu_control = 5'b00000;
     check(15);
 
     // SUB
-    alu_control = 4'b0001;
+    alu_control = 5'b00001;
     check(5);
 
     // AND
-    a = 32'hF0F0; b = 32'h0FF0; alu_control = 4'b0010;
+    a = 32'hF0F0; b = 32'h0FF0; alu_control = 5'b00010;
     check(a & b);
 
     // OR
-    alu_control = 4'b0011;
+    alu_control = 5'b00011;
     check(a | b);
 
     // SLT
-    a = -1; b = 1; alu_control = 4'b1000;
+    a = -1; b = 1; alu_control = 5'b10000;
     check(1);
 
     $display("ALU TEST COMPLETE");
