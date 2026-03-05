@@ -22,7 +22,7 @@ int main(int argc, char **argv) {
     top->trace(tfp, 99);
     tfp->open("dump.vcd");
 
-    // Reset
+    // ── Reset ──────────────────────────────────────────────────────────────
     top->reset = 1;
     top->clk   = 0;
     for (int i = 0; i < 4; i++) {
@@ -32,9 +32,12 @@ int main(int argc, char **argv) {
     }
     top->reset = 0;
 
-    const int MAX_CYCLES = 300;
-    uint32_t last_pc = 0xFFFFFFFF;
-    int cycle = 0;
+    const int MAX_CYCLES      = 300;
+    const int MAX_STUCK_REAL  = 4;   // tolerate this many consecutive non-stall
+                                     // same-PC cycles before declaring a hang
+    uint32_t last_pc      = 0xFFFFFFFF;
+    int      stuck_count  = 0;
+    int      cycle        = 0;
 
     std::cout << "\n===== CPU TORTURE TEST START =====\n\n";
 
@@ -44,38 +47,45 @@ int main(int argc, char **argv) {
         top->eval();
         tfp->dump(tick);
 
-        if (!top->clk) continue;
+        if (!top->clk) continue;   // only sample on rising edge
 
         cycle++;
 
-        uint32_t pc = top->pc_dbg;
+        uint32_t pc    = top->pc_dbg;
+        bool     stall = (top->dbg_stall != 0);
 
         std::cout << "[Cycle " << std::setw(3) << cycle << "]  ";
         std::cout << "PC=" << hex32(pc);
         std::cout << "  x1=" << top->dbg_x1;
         std::cout << "  x2=" << top->dbg_x2;
         std::cout << "  x3=" << top->dbg_x3;
+        if (stall) std::cout << "  <STALL>";
         std::cout << "\n";
 
-        // Detect trap vector entry (mtvec = 0x100)
+        // ── Trap vector entry ───────────────────────────────────────────────
         if (pc == 0x100) {
             std::cout << "\n*** TRAP ENTERED (mtvec=0x100) ***\n";
             break;
         }
 
-        // Detect PC stuck
-        if (pc == last_pc) {
-            std::cout << "\n*** PC STUCK — HALTING ***\n";
-            break;
+        // ── PC-stuck detection (ignores intentional stalls) ─────────────────
+        if (pc == last_pc && !stall) {
+            stuck_count++;
+            if (stuck_count >= MAX_STUCK_REAL) {
+                std::cout << "\n*** PC STUCK (non-stall) — HALTING ***\n";
+                break;
+            }
+        } else {
+            stuck_count = 0;
         }
 
         last_pc = pc;
     }
 
     std::cout << "\n===== FINAL REGISTER SNAPSHOT =====\n";
-    std::cout << "x1  = " << top->dbg_x1 << "\n";
-    std::cout << "x2  = " << top->dbg_x2 << "\n";
-    std::cout << "x3  = " << top->dbg_x3 << "\n";
+    std::cout << "x1  = " << top->dbg_x1  << "\n";
+    std::cout << "x2  = " << top->dbg_x2  << "\n";
+    std::cout << "x3  = " << top->dbg_x3  << "\n";
     std::cout << "mem[0] = " << top->dbg_mem0 << "\n";
     std::cout << "mem[4] = " << top->dbg_mem4 << "\n";
     std::cout << "\nSimulation finished after "
