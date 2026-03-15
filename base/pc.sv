@@ -15,12 +15,6 @@ module pc (
     output logic [31:0] pc_out
 );
 
-/* verilator lint_off EOFNEWLINE */
-/* verilator lint_off PROCASSINIT */
-/* verilator lint_off PINMISSING */
-/* verilator lint_off UNDRIVEN */
-/* verilator lint_off IMPLICIT */
-/* verilator lint_off BLKSEQ */
 
 always_ff @(posedge clk) begin
     if (reset)

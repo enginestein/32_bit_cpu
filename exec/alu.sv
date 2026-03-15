@@ -17,9 +17,6 @@ module alu (
     output logic [31:0] y
 );
 
-    /* verilator lint_off EOFNEWLINE */
-    /* verilator lint_off PROCASSINIT */
-    /* verilator lint_off BLKSEQ */
 
     always_comb begin
         case (alu_control)

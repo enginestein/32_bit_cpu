@@ -1,5 +1,6 @@
 /* verilator lint_off UNOPTFLAT */
 /* verilator lint_off STMTDLY */
+/* verilator lint_off PINMISSING */
 
 module tb_cpu_top;
 

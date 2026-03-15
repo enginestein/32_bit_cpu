@@ -1,22 +1,22 @@
 /*
-    - Multi-Cycle Multiply / Divide Unit -
+-    Multi-Cycle Multiply / Divide Unit -
 
-    Handles the RISC-V M-extension operations that are too expensive for a
-    single-cycle ALU path:
+    This unit implements the RISC-V M-extension operations that are too expensive to be
+    implemented in the ALU pipeline as they generally run as multi cycle operations.
 
         MUL / MULH / MULHSU / MULHU   (MUL_CYCLES latency)
         DIV / DIVU / REM  / REMU      (DIV_CYCLES latency)
 
     Interface
     ---------
-    start  : pulse high for exactly ONE cycle to begin an operation.
-             Ignored while busy is high.
-    op     : alu_control encoding (must be stable while start is high)
+    start  : pulse high for exactly ONE cycle to start the operation.
+             Ignored if busy is high.
+    op     : alu_control value (must be stable while start is high)
     a, b   : operands (must be stable while start is high)
     ready  : pulses HIGH for exactly one cycle when the result is valid.
-    result : valid on the cycle ready is high, then holds until next start.
+    result : valid when ready is high, and then stable until next start.
 
-    Latency parameters can be tuned without changing any other file.
+    The latency parameters can be changed without modifying any other file.
 */
 
 module muldiv_unit (
@@ -30,10 +30,6 @@ module muldiv_unit (
     output logic        ready
 );
 
-/* verilator lint_off EOFNEWLINE */
-/* verilator lint_off PROCASSINIT */
-/* verilator lint_off WIDTHEXPAND */
-/* verilator lint_off BLKSEQ */
 
     // ---------- tuneable latencies ----------
     localparam int MUL_CYCLES = 3;   // cycles to complete a multiply

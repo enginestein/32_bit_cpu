@@ -19,9 +19,6 @@ module regfile (
     output logic [31:0] dbg_x3
 );
 
-/* verilator lint_off EOFNEWLINE */
-/* verilator lint_off PROCASSINIT */
-/* verilator lint_off BLKSEQ */
 
     logic [31:0] regs [0:31]; // 32 registers, each 32 bits wide
 

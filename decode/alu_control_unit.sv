@@ -12,11 +12,6 @@ module alu_control_unit (
     output logic [4:0] alu_control
 );
 
-    /* verilator lint_off EOFNEWLINE */
-    /* verilator lint_off PROCASSINIT */
-    /* verilator lint_off BLKSEQ */
-    /* verilator lint_off CASEINCOMPLETE */
-    /* verilator lint_off LATCH */
 
     always_comb begin
         case (alu_op)

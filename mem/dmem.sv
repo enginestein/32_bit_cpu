@@ -1,3 +1,12 @@
+/*
+
+    - Data Memory - 
+
+    This file helps in storing and loading data from the memory. it checks for misaligned data
+    as well by checking the address and the funct3 value.
+
+*/
+
 module dmem (
     input  logic        clk,
     input  logic        we,
@@ -8,11 +17,8 @@ module dmem (
     output logic [31:0] rd,
     output logic misaligned
 );
-
-    /* verilator lint_off EOFNEWLINE */
     /* verilator lint_off CASEINCOMPLETE */
-    /* verilator lint_off PROCASSINIT */
-    /* verilator lint_off BLKSEQ */
+
 
     parameter RAM_SIZE = 4096;
     logic [1:0] mem_size; // 00 = byte, 01 = half, 10 = word

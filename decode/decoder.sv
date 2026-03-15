@@ -20,9 +20,6 @@ module decoder (
    
 );
 
-/* verilator lint_off EOFNEWLINE */
-/* verilator lint_off PROCASSINIT */
-/* verilator lint_off BLKSEQ */ 
 
 // this part splits the instruction.
 // lets say, the instr is 000000 00010 00001 000 00011 0110011

@@ -1,6 +1,8 @@
-/* verilator lint_off UNOPTFLAT */
 
 module tb_control_unit;
+
+/* verilator lint_off UNOPTFLAT */
+/* verilator lint_off PINMISSING */
 
     logic [6:0] opcode;
     logic reg_we, alu_src, mem_we, mem_re, mem_to_reg, branch;
@@ -16,6 +18,8 @@ module tb_control_unit;
         .mem_to_reg(mem_to_reg),
         .branch(branch)
     );
+
+
 
     initial begin
 

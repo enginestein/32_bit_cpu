@@ -26,15 +26,10 @@ module control_unit (
     output reg  [3:0]   trap_cause
 );
 
-    /* verilator lint_off EOFNEWLINE */
-    /* verilator lint_off PROCASSINIT */
-    /* verilator lint_off BLKSEQ */
-    /* verilator lint_off PINMISSING */
-    /* verilator lint_off LATCH */
 
     always_comb begin
 
-        // Default values
+        // Defaults
         reg_we      = 0;
         alu_src     = 0;
         alu_op      = 2'b00;

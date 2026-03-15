@@ -10,14 +10,10 @@ module cpu_top (
     output logic        dbg_stall   // HIGH while a multi-cycle op is in progress
 );
 
-/* verilator lint_off EOFNEWLINE */
-/* verilator lint_off PROCASSINIT */
-/* verilator lint_off PINMISSING */
-/* verilator lint_off WIDTHEXPAND */
-/* verilator lint_off UNDRIVEN */
-/* verilator lint_off IMPLICIT */
-/* verilator lint_off CASEINCOMPLETE */
-/* verilator lint_off BLKSEQ */
+
+    /* verilator lint_off WIDTH */
+    /* verilator lint_off CASEINCOMPLETE */
+    /* verilator lint_off BLKSEQ */
 
     logic        alu_src;
     logic [1:0]  alu_op;
@@ -94,12 +90,12 @@ module cpu_top (
     // Multi-cycle stall logic
     // =========================================================================
     //
-    // is_muldiv   – the current instruction is a MUL/DIV family op
-    // muldiv_start– single-cycle pulse to kick off the muldiv_unit
-    // muldiv_active–registered flag: unit has been started and not yet finished
-    // muldiv_ready– single-cycle pulse from muldiv_unit when result is valid
-    // muldiv_result–result from muldiv_unit
-    // stall       – hold PC and suppress writeback while unit is working
+    // is_muldiv - the current instruction is a MUL/DIV family op
+    // muldiv_start - single-cycle pulse to kick off the muldiv_unit
+    // muldiv_active - registered flag: unit has been started and not yet finished
+    // muldiv_ready - single-cycle pulse from muldiv_unit when result is valid
+    // muldiv_result - result from muldiv_unit
+    // stall - hold PC and suppress writeback while unit is working
     //
     // Timeline for a DIV instruction (DIV_CYCLES = 8):
     //
@@ -155,8 +151,22 @@ module cpu_top (
         .instr (instr)
     );
 
+  /*  logic [31:0] if_id_instr;
+    logic [31:0] if_id_pc;
+
+    always_ff @(posedge clk) begin : 
+        if (reset) begin
+            if_id_instr <= 0
+            if_id_pc <= 0
+        end
+        else begin 
+            if_id_instr <= instr
+            if_id_pc <= pc
+        end
+    end */
+
     decoder dec_u (
-        .instr  (instr),
+        .instr  (if_id_instr),
         .opcode (opcode),
         .rd     (rd),
         .rs1    (rs1),

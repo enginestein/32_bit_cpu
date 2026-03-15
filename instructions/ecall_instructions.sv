@@ -3,9 +3,6 @@ module instruction_input_memory (
     output logic [31:0] instr
 );
 
-/* verilator lint_off EOFNEWLINE */
-/* verilator lint_off PROCASSINIT */
-/* verilator lint_off BLKSEQ */
 
     logic [31:0] mem [0:255];
 

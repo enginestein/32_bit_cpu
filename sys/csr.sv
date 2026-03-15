@@ -11,7 +11,7 @@ module csr (
     input  logic        trap_write
 );
 
-/* verilator lint_off CASEINCOMPLETE */
+    /* verilator lint_off CASEINCOMPLETE */
 
     logic [31:0] mstatus;
     logic [31:0] mtvec;

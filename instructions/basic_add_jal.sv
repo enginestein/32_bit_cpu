@@ -5,9 +5,6 @@ module instruction_input_memory (
     output logic [31:0] instr // the 32 bit instruction, which is returned
 );
 
-    /* verilator lint_off EOFNEWLINE */
-/* verilator lint_off PROCASSINIT */
-/* verilator lint_off BLKSEQ */
 
     logic [31:0] mem [0:255]; // this is the storage of memory, has 256 slots, and each slot is 32 bits wide. It can hold 256 instructions.
 

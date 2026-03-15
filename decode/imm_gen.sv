@@ -12,9 +12,6 @@ module imm_gen (
 );
 
 
-/* verilator lint_off EOFNEWLINE */
-/* verilator lint_off PROCASSINIT */
-/* verilator lint_off BLKSEQ */
     logic [6:0] opcode;
 
     assign opcode = instr[6:0];
