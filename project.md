@@ -564,6 +564,8 @@ mem[addr[9:2]] <= wd
 
 ---
 
+pc → imem → decoder → regfile → alu → dmem → writeback
+
 # 1. CPU Architecture Overview
 
 This processor is a **32-bit RISC-V core implementing the RV32I instruction set**, with **partial support for the M extension** (multiply and divide operations).

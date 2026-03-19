@@ -16,7 +16,23 @@ module decoder (
     output logic [4:0] rs1, // source register 1, the two numbers which CPU will grab to sent to the ALU.
     output logic [4:0] rs2, // source register 2
     output logic [2:0] funct3, // some extra bits used to distniguish further between instructions.
-    output logic [6:0] funct7
+    output logic [6:0] funct7,
+
+    output logic is_r,
+    output logic is_i,
+    output logic is_load,
+    output logic is_store,
+    output logic is_branch,
+    output logic is_jal,
+    output logic is_jalr,
+    output logic is_lui,
+    output logic is_auipc,
+
+    output logic uses_rs1,
+    output logic uses_rs2,
+    output logic writes_rd,
+
+    output logic illegal
    
 );
 
@@ -30,12 +46,37 @@ module decoder (
 // rs2 = 00010
 // funct7 = 000000
 
+
     assign opcode = instr[6:0];
     assign rd = instr[11:7];
     assign funct3 = instr[14:12];
     assign rs1 = instr[19:15];
     assign rs2 = instr[24:20];
     assign funct7 = instr[31:25];
+
+    assign is_r = (opcode == 7'b0110011);
+    assign is_i = (opcode == 7'b0010011);
+    assign is_load   = (opcode == 7'b0000011);
+    assign is_store  = (opcode == 7'b0100011);
+    assign is_branch = (opcode == 7'b1100011);
+    assign is_jal    = (opcode == 7'b1101111);
+    assign is_jalr   = (opcode == 7'b1100111);
+    assign is_lui    = (opcode == 7'b0110111);
+    assign is_auipc  = (opcode == 7'b0010111);
+
+    assign uses_rs1 =
+        is_r || is_i || is_load || is_store || is_branch || is_jalr;
+
+    assign uses_rs2 =
+        is_r || is_store || is_branch;
+
+    assign writes_rd =
+        is_r || is_i || is_load || is_jal || is_jalr || is_lui || is_auipc;
+
+    assign illegal = !(is_r || is_i || is_load || is_store ||
+        is_branch || is_jal || is_jalr ||
+            is_lui || is_auipc);
+
 
 
 endmodule

@@ -22,12 +22,28 @@ module cpu_top (
     logic [31:0] pc;
     logic [31:0] instr;
 
+    logic branch_taken_internal;
+
     assign pc_dbg = pc;
 
     logic [6:0] opcode;
     logic [4:0] rd, rs1, rs2;
     logic [2:0] funct3;
     logic [6:0] funct7;
+
+    logic is_r;
+    logic is_i;
+    logic is_load;
+    logic is_store;
+    logic is_branch;
+    logic is_jal;
+    logic is_jalr;
+    logic is_lui;
+    logic is_auipc;
+    logic uses_rs1;
+    logic uses_rs2;
+    logic writes_rd;
+    logic illegal;
 
     logic [11:0] csr_addr;
     logic [31:0] csr_rdata;
@@ -146,33 +162,52 @@ module cpu_top (
         .pc_out  (pc)
     );
 
+  
+
     instruction_input_memory imem_u (
         .addr  (pc),
         .instr (instr)
     );
 
-  /*  logic [31:0] if_id_instr;
+    logic [31:0] if_id_instr;
     logic [31:0] if_id_pc;
 
-    always_ff @(posedge clk) begin : 
+    always_ff @(posedge clk) begin 
         if (reset) begin
-            if_id_instr <= 0
-            if_id_pc <= 0
+            if_id_instr <= 0;
+            if_id_pc <= 0;
         end
-        else begin 
-            if_id_instr <= instr
-            if_id_pc <= pc
+        else begin
+            if_id_instr <= instr;
+            if_id_pc <= pc;
         end
-    end */
+    end 
 
     decoder dec_u (
-        .instr  (if_id_instr),
+        .instr  (instr),
         .opcode (opcode),
         .rd     (rd),
         .rs1    (rs1),
         .rs2    (rs2),
         .funct3 (funct3),
-        .funct7 (funct7)
+        .funct7 (funct7),
+
+        .is_r(is_r),
+        .is_i(is_i),
+        .is_load(is_load),
+        .is_store(is_store),
+        .is_branch(is_branch),
+        .is_jal(is_jal),
+        .is_jalr(is_jalr),
+        .is_lui(is_lui),
+        .is_auipc(is_auipc),
+
+        .uses_rs1(uses_rs1),
+        .uses_rs2(uses_rs2),
+        .writes_rd(writes_rd),
+
+        .illegal(illegal)
+
     );
 
     logic [31:0] imm;
@@ -182,6 +217,13 @@ module cpu_top (
         .imm   (imm)
     );
 
+    branch_unit branch_u (
+        .a(rs1_val),
+        .b(rs2_val),
+        .funct3(funct3),
+        .taken(branch_taken_internal)
+    );
+
     logic jal;
     assign jal  = (opcode == 7'b1101111);
 
@@ -189,14 +231,7 @@ module cpu_top (
     assign jalr = (opcode == 7'b1100111);
 
     assign branch_taken =
-        jal || jalr || (branch && (
-            (funct3 == 3'b000 && alu_out == 32'd0)  ||  // BEQ
-            (funct3 == 3'b001 && alu_out != 32'd0)  ||  // BNE
-            (funct3 == 3'b100 && alu_out == 32'd1)  ||  // BLT
-            (funct3 == 3'b101 && alu_out == 32'd0)  ||  // BGE
-            (funct3 == 3'b110 && alu_out == 32'd1)  ||  // BLTU
-            (funct3 == 3'b111 && alu_out == 32'd0)      // BGEU
-        ));
+        jal || jalr || (branch && branch_taken_internal);
 
     assign branch_target =
         jal  ? (pc + imm) :
@@ -371,11 +406,16 @@ module cpu_top (
         $display("  PC (hex) : 0x%08h", pc);
         $display("  PC (dec) : %0d", pc);
         $display("  PC (bin) : %032b", pc);
+        $display("  IF -> ID PC (hex)  : 0x%08h", if_id_pc);
+        $display("  IF -> ID PC (dec)  : %0d", if_id_pc);
+        $display("  IF -> ID PC (bin)  : %32b", if_id_pc);
         $display("");
 
         $display("FETCH STAGE");
         $display("  Instruction (hex) : 0x%08h", instr);
+        $display("  IF -> ID Instruction (hex): 0x%08h", if_id_instr);
         $display("  Instruction (bin) : %032b", instr);
+        $display("  IF -> ID Instruction (bin): %032b", if_id_instr);
         $display("");
 
         $display("DECODE STAGE");
@@ -423,11 +463,13 @@ module cpu_top (
         $display("");
 
         $display("WRITEBACK STAGE");
-        if (reg_we_final)
+        if (reg_we_final && rd != 0)
             $display("  Writing %0d (0x%08h) to register x%0d",
                      writeback_data, writeback_data, rd);
         else if (stall)
             $display("  No register write this cycle (stalled)");
+        else if (rd == 0)
+            $display("  No register write this cycle (rd=0)");
         else
             $display("  No register write this cycle");
         $display("");
