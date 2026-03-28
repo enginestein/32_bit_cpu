@@ -626,6 +626,7 @@ remu
 
 # 21. Reset Behavior
 
+
 When reset is asserted:
 
 ```
@@ -635,3 +636,8 @@ CSR registers initialized
 ```
 
 Execution then begins at **instruction memory address 0**.
+
+
+# 22. Diagram of the clock
+
+<img width="1680" height="871" alt="circuit" src="https://github.com/user-attachments/assets/8da60d8d-d7f4-48f8-b62f-e56c7954d1c8" />

@@ -379,6 +379,23 @@ module cpu_top (
         branch_taken ? branch_target :
                        (pc + 32'd4);
 
+
+    function string instr_name();
+        case (opcode)
+            7'b0110011: instr_name = "R-TYPE";
+            7'b0010011: instr_name = "I-TYPE";
+            7'b0000011: instr_name = "LOAD";
+            7'b0100011: instr_name = "STORE";
+            7'b1100011: instr_name = "BRANCH";
+            7'b1101111: instr_name = "JAL";
+            7'b1100111: instr_name = "JALR";
+            7'b0110111: instr_name = "LUI";
+            7'b0010111: instr_name = "AUIPC";
+            7'b1110011: instr_name = "SYSTEM";
+            default:    instr_name = "UNKNOWN";
+        endcase
+    endfunction
+
     // =========================================================================
     // Debug display
     // =========================================================================
@@ -393,6 +410,20 @@ module cpu_top (
         if (stall) begin
             $display("*** STALL *** (multi-cycle op: %s, active=%b, ready=%b)",
                      alu_op_name(alu_control), muldiv_active, muldiv_ready);
+            $display("*** STALL BREAKDOWN ***");
+            $display("  is_muldiv      : %b", is_muldiv);
+            $display("  muldiv_start   : %b", muldiv_start);
+            $display("  muldiv_active  : %b", muldiv_active);
+            $display("  muldiv_ready   : %b", muldiv_ready);
+        end
+
+        if (is_muldiv) begin
+            $display("MULDIV TRACE");
+            $display("  start   : %b", muldiv_start);
+            $display("  active  : %b", muldiv_active);
+            $display("  ready   : %b", muldiv_ready);
+            $display("  result  : %0d (0x%08h)", muldiv_result, muldiv_result);
+            $display("");
         end
 
         if (misaligned) begin
@@ -401,6 +432,15 @@ module cpu_top (
             $display(" funct3  : %03b", funct3);
             $display("==========================================");
         end
+
+        if (trap) begin
+            $display("*** TRAP DETECTED ***");
+            $display("  cause : %0d", trap_cause);
+            $display("  mtvec : 0x%08h", csr_rdata);
+        end
+
+        $display("  Instruction Type : %s", instr_name());
+        $display("  mem_addr   : 0x%08h", alu_out);
 
         $display("PC STAGE");
         $display("  PC (hex) : 0x%08h", pc);
@@ -426,6 +466,20 @@ module cpu_top (
         $display("  funct3 : %03b", funct3);
         $display("  funct7 : %07b", funct7);
         $display("");
+
+        $display("DECODE FLAGS");
+        $display("  is_r=%b is_i=%b load=%b store=%b branch=%b",
+         is_r, is_i, is_load, is_store, is_branch);
+        $display("  jal=%b jalr=%b lui=%b auipc=%b",
+         is_jal, is_jalr, is_lui, is_auipc);
+        $display("  uses_rs1=%b uses_rs2=%b writes_rd=%b illegal=%b",
+         uses_rs1, uses_rs2, writes_rd, illegal);
+        $display("");
+
+        if (illegal) begin
+            $display("!!! ILLEGAL INSTRUCTION DETECTED !!!");
+            $display("  instr : 0x%08h", instr);
+        end
 
         $display("CONTROL SIGNALS");
         $display("  reg_we     : %b", reg_we);
@@ -462,12 +516,23 @@ module cpu_top (
                      alu_out, alu_out, alu_out);
         $display("");
 
+        $display("WRITEBACK SOURCE SELECT");
+        $display("  mret        : %b", mret);
+        $display("  is_csr      : %b", is_csr);
+        $display("  jal/jalr    : %b", (jal || jalr));
+        $display("  mem_to_reg  : %b", mem_to_reg);
+        $display("  is_muldiv   : %b", is_muldiv);
+        $display("  selected WB : %0d (0x%08h)", writeback_data, writeback_data);
+        $display("");
+
         $display("WRITEBACK STAGE");
         if (reg_we_final && rd != 0)
             $display("  Writing %0d (0x%08h) to register x%0d",
                      writeback_data, writeback_data, rd);
         else if (stall)
-            $display("  No register write this cycle (stalled)");
+            $display("  No write (STALL)");
+        else if (trap)
+            $display("  No write (TRAP)");
         else if (rd == 0)
             $display("  No register write this cycle (rd=0)");
         else
@@ -479,7 +544,28 @@ module cpu_top (
         $display("  jalr         : %b", jalr);
         $display("  branch       : %b", branch);
         $display("  branch_taken : %b", branch_taken);
+        $display("  Branch decision:");
+        $display("    condition result : %b", branch_taken_internal);
+        $display("    final decision   : %b", branch_taken);
         $display("  branch_target: 0x%08h", branch_target);
+        $display("NEXT PC LOGIC");
+        if (stall)
+            $display("  Reason: STALL (PC held)");
+        else if (mret)
+            $display("  Reason: MRET -> csr_rdata");
+        else if (branch_taken)
+            $display("  Reason: BRANCH/JUMP taken");
+        else
+            $display("  Reason: PC + 4");
+
+        $display("  next_pc : 0x%08h", next_pc);
+        $display("");
+
+        $display("BRANCH DETAIL");
+        $display("  rs1_val : %0d", rs1_val);
+        $display("  rs2_val : %0d", rs2_val);
+        $display("  funct3  : %03b", funct3);
+        $display("  taken_internal : %b", branch_taken_internal);
         $display("");
 
         $display("MEMORY STAGE");
@@ -487,14 +573,21 @@ module cpu_top (
         $display("  mem_re     : %b", mem_re);
         $display("  mem_to_reg : %b", mem_to_reg);
         $display("  mem_data   : %0d (0x%08h)", mem_data, mem_data);
+        $display("MEMORY ACCESS DETAIL");
+        $display("  address      : 0x%08h", alu_out);
+        $display("  write_data   : %0d (0x%08h)", rs2_val, rs2_val);
+        $display("  read_enable  : %b", mem_re);
+        $display("  write_enable : %b", mem_we);
         $display("");
 
-        $display("REGISTER SNAPSHOT");
+        $display("REGISTER SNAPSHOT (before writeback commit)");
         $display("  x1 : %0d", rf_u.regs[1]);
         $display("  x2 : %0d", rf_u.regs[2]);
         $display("  x3 : %0d", rf_u.regs[3]);
 
         $display("  Next PC     : %0d ", next_pc);
+        $display("SUMMARY: PC=0x%08h INST=0x%08h OP=%s RD=x%0d WB=%0d STALL=%b",
+         pc, instr, alu_op_name(alu_control), rd, writeback_data, stall);
         $display("======================================================================");
     end
 

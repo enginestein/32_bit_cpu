@@ -10,7 +10,7 @@ NC='\033[0m'
 RTL_FILES="exec/alu.sv base/cpu_top.sv decode/decoder.sv mem/dmem.sv \
 mem/instruction_input_memory.sv decode/imm_gen.sv base/pc.sv \
 reg/regfile.sv decode/alu_control_unit.sv decode/control_unit.sv \
-sys/trap.sv sys/csr.sv exec/muldiv_unit.sv exec/branch_unit.sv"
+sys/trap.sv sys/csr.sv exec/muldiv_unit.sv exec/branch_unit.sv mem/bus.sv mem/uart.sv"
 
 run_cpu() {
     echo -e "${YELLOW}==> Building CPU...${NC}"

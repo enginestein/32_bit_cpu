@@ -20,7 +20,18 @@ module imm_gen (
         case (opcode)
 
             // I-TYPE (addi, lw, jalr, etc.)
-            7'b0010011,
+            7'b0010011: begin
+            // Shift-immediate instructions
+                if (instr[14:12] == 3'b001 || instr[14:12] == 3'b101) begin
+                    // SLLI / SRLI / SRAI → use shamt (zero-extended)
+                    imm = {27'b0, instr[24:20]};
+                end else begin
+                    // Normal I-type
+                    imm = {{20{instr[31]}}, instr[31:20]};
+                end
+            end
+
+            // Loads
             7'b0000011,
             7'b1100111:
                 imm = {{20{instr[31]}}, instr[31:20]};
