@@ -1,6 +1,6 @@
 #include "Vcpu_top.h"
 #include "verilated.h"
-#include "verilated_vcd_c.h"
+#include "verilated_fst_c.h"
 #include <iostream>
 #include <iomanip>
 #include <sstream>
@@ -18,10 +18,9 @@ int main(int argc, char **argv) {
     Vcpu_top* top = new Vcpu_top;
 
     Verilated::traceEverOn(true);
-    VerilatedVcdC* tfp = new VerilatedVcdC;
+    VerilatedFstC* tfp = new VerilatedFstC;
     top->trace(tfp, 99);
-    tfp->open("dump.vcd");
-
+    tfp->open("dump.fst");
     // ── Reset ──────────────────────────────────────────────────────────────
     top->reset = 1;
     top->clk   = 0;
@@ -32,14 +31,14 @@ int main(int argc, char **argv) {
     }
     top->reset = 0;
 
-    const int MAX_CYCLES      = 100;
+    const int MAX_CYCLES      = 300;
     const int MAX_STUCK_REAL  = 4;   // tolerate this many consecutive non-stall
                                      // same-PC cycles before declaring a hang
     uint32_t last_pc      = 0xFFFFFFFF;
     int      stuck_count  = 0;
     int      cycle        = 0;
 
-    std::cout << "\n===== CPU TORTURE TEST START =====\n\n";
+    std::cout << "\n===== CPU TEST START =====\n\n";
 
     for (int tick = 4; tick < MAX_CYCLES * 2 + 4; tick++) {
 

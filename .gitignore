@@ -3,3 +3,6 @@ obj_dir
 dump.vcd
 project.md
 todo.md
+waves
+logs
+coverage

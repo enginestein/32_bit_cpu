@@ -69,8 +69,8 @@ module cpu_top (
     logic        branch_taken;
     logic [31:0] branch_target;
 
-    assign dbg_mem0 = dmem.mem[0];
-    assign dbg_mem4 = dmem.mem[1];
+    assign dbg_mem0 = {dmem.mem[3], dmem.mem[2], dmem.mem[1], dmem.mem[0]};
+    assign dbg_mem4 = {dmem.mem[7], dmem.mem[6], dmem.mem[5], dmem.mem[4]};
 
     integer cycle = 0;
 
@@ -349,7 +349,7 @@ module cpu_top (
         (is_csr)      ? csr_rdata    :
         (jal || jalr) ? (pc + 32'd4) :
         (mem_to_reg)  ? mem_data     :
-        (is_muldiv)   ? muldiv_result :  // ← result from multi-cycle unit
+        (is_muldiv)   ? muldiv_result :  // <- result from multi-cycle unit
                         alu_out;
 
     // Suppress register write while stalled or on a trap
