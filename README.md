@@ -22,7 +22,7 @@ Key architectural characteristics:
 Conceptually, instruction execution follows the standard CPU stages:
 
 ```
-PC → FETCH → DECODE → EXECUTE → MEMORY → WRITEBACK
+PC -> FETCH -> DECODE -> EXECUTE -> MEMORY -> WRITEBACK
 ```
 
 Although the processor is **not physically pipelined**, the datapath still follows these logical stages internally.
@@ -352,9 +352,9 @@ funct7
 Example mapping:
 
 ```
-alu_op = 00 → ADD
-alu_op = 01 → branch comparison
-alu_op = 10 → determined by funct3/funct7
+alu_op = 00 -> ADD
+alu_op = 01 -> branch comparison
+alu_op = 10 -> determined by funct3/funct7
 ```
 
 The unit also identifies instructions belonging to the **M extension**.
@@ -385,9 +385,9 @@ These operations take multiple cycles:
 Interface:
 
 ```
-start  → begin operation
-ready  → result available
-result → final value
+start  -> begin operation
+ready  -> result available
+result -> final value
 ```
 
 Internally, a cycle counter tracks progress:
@@ -532,9 +532,9 @@ branch condition
 Branch targets are calculated as:
 
 ```
-jal   → pc + imm
-jalr  → rs1 + imm
-branch→ pc + imm
+jal   -> pc + imm
+jalr  -> rs1 + imm
+branch-> pc + imm
 ```
 
 ---

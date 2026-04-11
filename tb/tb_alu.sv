@@ -15,7 +15,7 @@ module tb_alu;
 
     task check(input [31:0] expected);
         if (y !== expected) begin
-            $display("❌ FAIL: a=%0d b=%0d ctrl=%b → got=%0d expected=%0d",
+            $display("❌ FAIL: a=%0d b=%0d ctrl=%b -> got=%0d expected=%0d",
                       a, b, alu_control, y, expected);
             $fatal;
         end

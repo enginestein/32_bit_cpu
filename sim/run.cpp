@@ -31,7 +31,7 @@ int main(int argc, char **argv) {
     }
     top->reset = 0;
 
-    const int MAX_CYCLES      = 300;
+    const int MAX_CYCLES      = 5000;
     const int MAX_STUCK_REAL  = 4;   // tolerate this many consecutive non-stall
                                      // same-PC cycles before declaring a hang
     uint32_t last_pc      = 0xFFFFFFFF;

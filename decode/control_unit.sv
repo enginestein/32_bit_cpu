@@ -97,7 +97,7 @@ module control_unit (
             end
 
             7'b0001111: begin
-                // FENCE / FENCE.I → NOP
+                // FENCE / FENCE.I -> NOP
             end
 
             7'b1100111: begin  // JALR

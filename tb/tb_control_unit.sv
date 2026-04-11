@@ -19,8 +19,6 @@ module tb_control_unit;
         .branch(branch)
     );
 
-
-
     initial begin
 
         // R-type

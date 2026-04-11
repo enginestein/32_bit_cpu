@@ -7,7 +7,8 @@ module cpu_top (
     output logic [31:0] dbg_mem4,
     output logic [31:0] dbg_x2,
     output logic [31:0] dbg_x3,
-    output logic        dbg_stall   // HIGH while a multi-cycle op is in progress
+    output logic        dbg_stall,   // HIGH while a multi-cycle op is in progress
+    output logic uart_tx
 );
 
 
@@ -69,8 +70,8 @@ module cpu_top (
     logic        branch_taken;
     logic [31:0] branch_target;
 
-    assign dbg_mem0 = {dmem.mem[3], dmem.mem[2], dmem.mem[1], dmem.mem[0]};
-    assign dbg_mem4 = {dmem.mem[7], dmem.mem[6], dmem.mem[5], dmem.mem[4]};
+    assign dbg_mem0 = {dmem_u.mem[3], dmem_u.mem[2], dmem_u.mem[1], dmem_u.mem[0]};
+    assign dbg_mem4 = {dmem_u.mem[7], dmem_u.mem[6], dmem_u.mem[5], dmem_u.mem[4]};
 
     integer cycle = 0;
 
@@ -258,16 +259,66 @@ module cpu_top (
         .trap_cause  (trap_cause)
     );
 
-    dmem dmem (
-        .clk        (clk),
-        .we         (mem_we),
-        .funct3     (funct3),
-        .misaligned (misaligned),
-        .addr       (alu_out),
-        .re         (mem_re),
-        .wd         (rs2_val),
-        .rd         (mem_data)
+
+    // bus wires cpu_top -> bus -> dmem/uart
+
+    logic [31:0] bus_rdata;
+    logic dmem_we_bus, dmem_re_bus;
+    logic [31:0] dmem_addr_bus, dmem_wdata_bus, dmem_rdata_bus;
+    logic dmem_misaligned_bus;
+
+    logic uart_cs_bus, uart_we_bus;
+    logic [31:0] uart_addr_bus, uart_wdata_bus, uart_rdata_bus;
+
+     
+    bus bus_u (
+        .clk            (clk),
+        .reset          (reset),
+        .we             (mem_we),
+        .re             (mem_re),
+        .addr           (alu_out),
+        .wdata          (rs2_val),
+        .funct3         (funct3),
+        .rdata          (bus_rdata),
+        .misaligned     (misaligned),
+        // dmem
+        .dmem_we        (dmem_we_bus),
+        .dmem_re        (dmem_re_bus),
+        .dmem_addr      (dmem_addr_bus),
+        .dmem_wdata     (dmem_wdata_bus),
+        .dmem_rdata     (dmem_rdata_bus),
+        .dmem_misaligned(dmem_misaligned_bus),
+        // uart
+        .uart_cs        (uart_cs_bus),
+        .uart_we        (uart_we_bus),
+        .uart_addr      (uart_addr_bus),
+        .uart_wdata     (uart_wdata_bus),
+        .uart_rdata     (uart_rdata_bus)
     );
+
+    dmem dmem_u (
+        .clk        (clk),
+        .we         (dmem_we_bus),
+        .funct3     (funct3),
+        .misaligned (dmem_misaligned_bus),
+        .addr       (dmem_addr_bus),
+        .re         (dmem_re_bus),
+        .wd         (dmem_wdata_bus),
+        .rd         (dmem_rdata_bus)
+    );
+
+    uart uart_u (
+        .clk     (clk),
+        .reset   (reset),
+        .cs      (uart_cs_bus),
+        .we      (uart_we_bus),
+        .addr    (uart_addr_bus),
+        .wdata   (uart_wdata_bus),
+        .rdata   (uart_rdata_bus),
+        .uart_tx (uart_tx)
+    );
+
+    assign mem_data = bus_rdata;
 
     alu_control_unit alu_ctrl_u (
         .alu_op      (alu_op),
@@ -378,6 +429,40 @@ module cpu_top (
         mret         ? csr_rdata    :
         branch_taken ? branch_target :
                        (pc + 32'd4);
+
+        always_ff @(posedge clk) begin
+        if (!reset && uart_cs_bus && uart_we_bus && uart_addr_bus[3:2] == 2'b00) begin
+            $write("%c", uart_wdata_bus[7:0]);
+        end
+    end
+ 
+
+    always @(posedge clk) begin
+        cycle++;
+ 
+        if (misaligned) begin
+            $display("[UART/MEM] MISALIGNED ACCESS @ 0x%08h funct3=%03b",
+                     alu_out, funct3);
+        end
+ 
+        if (trap) begin
+            $display("[TRAP] cause=%0d mtvec=0x%08h", trap_cause, csr_rdata);
+        end
+ 
+        // UART traffic summary
+        if (uart_cs_bus) begin
+            if (uart_we_bus)
+                $display("[UART WR] addr=0x%08h data=0x%08h ('%c')",
+                         uart_addr_bus, uart_wdata_bus,
+                         (uart_wdata_bus[7:0] >= 8'h20) ? uart_wdata_bus[7:0] : 8'h3F);
+            else
+                $display("[UART RD] addr=0x%08h → 0x%08h", uart_addr_bus, uart_rdata_bus);
+        end
+ 
+        $display("CYC %0d  PC=0x%08h  INST=0x%08h  OP=%s  RD=x%0d  WB=0x%08h  STALL=%b",
+                 cycle, pc, instr, alu_op_name(alu_control),
+                 rd, writeback_data, stall);
+    end
 
 
     function string instr_name();

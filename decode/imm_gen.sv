@@ -23,7 +23,7 @@ module imm_gen (
             7'b0010011: begin
             // Shift-immediate instructions
                 if (instr[14:12] == 3'b001 || instr[14:12] == 3'b101) begin
-                    // SLLI / SRLI / SRAI → use shamt (zero-extended)
+                    // SLLI / SRLI / SRAI -> use shamt (zero-extended)
                     imm = {27'b0, instr[24:20]};
                 end else begin
                     // Normal I-type
