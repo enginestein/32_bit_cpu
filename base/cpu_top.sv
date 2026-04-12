@@ -289,7 +289,7 @@ module cpu_top (
         .dmem_rdata     (dmem_rdata_bus),
         .dmem_misaligned(dmem_misaligned_bus),
         // uart
-        .uart_cs        (uart_cs_bus),
+        .uart_cs        (uart_cs_bus), // checks right hear if it's a UART
         .uart_we        (uart_we_bus),
         .uart_addr      (uart_addr_bus),
         .uart_wdata     (uart_wdata_bus),

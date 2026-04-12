@@ -38,7 +38,7 @@ assign dmem_re = re && is_ram;
 assign dmem_addr = addr;
 assign dmem_wdata = wdata;
 
-assign uart_cs = (we || re) && is_uart;
+assign uart_cs = (we || re) && is_uart; // if either we or re and uart is high
 assign uart_we = we && is_uart;
 assign uart_addr = addr;
 assign uart_wdata = wdata;
