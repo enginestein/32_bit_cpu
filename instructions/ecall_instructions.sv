@@ -21,7 +21,6 @@ module instruction_input_memory (
         //  PC 0x14:  blt  x1, x3, -8      if i < 10 goto loop
         //  PC 0x18:  sw   x2, 0(x0)       mem[0] = sum (55)
         //  PC 0x1C:  ecall                exit
-        //  ──────────────────────────────────────────────────
 
         mem[0] = 32'h00000093; // addi x1, x0, 0
         mem[1] = 32'h00000113; // addi x2, x0, 0

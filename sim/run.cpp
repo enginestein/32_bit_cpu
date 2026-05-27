@@ -21,7 +21,6 @@ int main(int argc, char **argv) {
     VerilatedFstC* tfp = new VerilatedFstC;
     top->trace(tfp, 99);
     tfp->open("dump.fst");
-    // ── Reset ──────────────────────────────────────────────────────────────
     top->reset = 1;
     top->clk   = 0;
     for (int i = 0; i < 4; i++) {
@@ -61,13 +60,11 @@ int main(int argc, char **argv) {
         if (stall) std::cout << "  <STALL>";
         std::cout << "\n";
 
-        // ── Trap vector entry ───────────────────────────────────────────────
         if (pc == 0x100) {
             std::cout << "\n*** TRAP ENTERED (mtvec=0x100) ***\n";
             break;
         }
 
-        // ── PC-stuck detection (ignores intentional stalls) ─────────────────
         if (pc == last_pc && !stall) {
             stuck_count++;
             if (stuck_count >= MAX_STUCK_REAL) {
