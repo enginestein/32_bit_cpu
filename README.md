@@ -1,9 +1,3 @@
-Looking at `cpu_top.sv` and `hazard_unit.sv`, I can see the core has clearly evolved into a full 5-stage pipeline (IF → ID → EX → MEM → WB) with forwarding, proper hazard detection, branch flushing, and trap handling. The readme's opening description is significantly out of date. Let me update it and give you some honest next-step thoughts.
-
----
-
-## Updated README
-
 ```markdown
 ## Table of Contents
 - [What it is](#what-it-is)
