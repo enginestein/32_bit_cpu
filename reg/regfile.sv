@@ -16,7 +16,9 @@ module regfile (
     output logic [31:0] rd2,
     output logic [31:0] dbg_x1,
     output logic [31:0] dbg_x2,
-    output logic [31:0] dbg_x3
+    output logic [31:0] dbg_x3,
+    output logic [31:0] dbg_x14,
+    output logic [31:0] dbg_x15
 );
 
 
@@ -29,6 +31,8 @@ module regfile (
     assign dbg_x1 = regs[1];
     assign dbg_x2 = regs[2];
     assign dbg_x3 = regs[3];
+    assign dbg_x14 = regs[14];
+    assign dbg_x15 = regs[15];
 
     always_ff @(posedge clk) begin // waiting for the clock, only then we right. so that the voltage gets on 1.
         if (we && rd != 0)

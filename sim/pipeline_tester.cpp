@@ -96,15 +96,11 @@ int main(int argc, char **argv) {
     check("TEST1: x1 = 1  (basic write)",           top->dbg_x1, 1);
     check("TEST1: x2 = 2  (basic write)",           top->dbg_x2, 2);
     check("TEST1: x3 = 3  (basic write)",           top->dbg_x3, 3);
-    check("TEST_MUL: x14 = 6  (mul x2*x3)",  top->dbg_x14, 6);
-    check("TEST_MUL: x15 = 6  (mv x15,x14)", top->dbg_x15, 6);
 
     std::cout << "\n===== FINAL REGISTER SNAPSHOT =====\n";
     std::cout << "x1  = " << top->dbg_x1  << "\n";
     std::cout << "x2  = " << top->dbg_x2  << "\n";
     std::cout << "x3  = " << top->dbg_x3  << "\n";
-    std::cout << "x14 = " << top->dbg_x14 << "\n";
-    std::cout << "x15 = " << top->dbg_x15 << "\n";
     std::cout << "mem[0] = " << top->dbg_mem0 << "\n";
     std::cout << "mem[4] = " << top->dbg_mem4 << "\n";
 

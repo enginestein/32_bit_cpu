@@ -40,7 +40,7 @@ module instruction_input_memory (
         mem[23] = 32'h02310733; // mul  x14, x2, x3      muldiv stall: x14=6
         mem[24] = 32'h00070793; // addi x15, x14, 0      forwarded from muldiv: x15=6
 
-        mem[25] = 32'h00100073; // ebreak                clean halt
+        mem[25] = 32'h0000006F; // jal  x0, 0            halt
 
     end
 

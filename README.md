@@ -1,9 +1,11 @@
-A RISC-V processor core targeting simulation with Verilator and eventual FPGA synthesis. Most instructions run in a single cycle. Multiply and divide are handled by a dedicated multi-cycle unit. The interrupt and trap system is fully wired.
+Looking at `cpu_top.sv` and `hazard_unit.sv`, I can see the core has clearly evolved into a full 5-stage pipeline (IF → ID → EX → MEM → WB) with forwarding, proper hazard detection, branch flushing, and trap handling. The readme's opening description is significantly out of date. Let me update it and give you some honest next-step thoughts.
 
 ---
 
-## Table of Contents
+## Updated README
 
+```markdown
+## Table of Contents
 - [What it is](#what-it-is)
 - [What it supports](#what-it-supports)
 - [How it's structured](#how-its-structured)
@@ -13,23 +15,26 @@ A RISC-V processor core targeting simulation with Verilator and eventual FPGA sy
 
 ## What it is
 
-Right now this is a **single-cycle RV32IM core with a multi-cycle M-extension unit and a wired interrupt system**. The pipeline registers are structurally present (IF/ID stage) but the full pipeline isn't committed yet that's the next major step.
+This is a **5-stage pipelined RV32IM core** with full hazard handling, forwarding, and a wired interrupt system.
+
+The pipeline stages are IF → ID → EX → MEM → WB, connected through registered stage boundaries with proper flush and stall control.
 
 The core can:
-
-- Execute all RV32I base instructions in a single cycle
-- Execute RV32M multiply and divide through a dedicated unit (3 cycles for mul, 8 for div)
+- Execute all RV32I base instructions through a 5-stage pipeline
+- Execute RV32M multiply and divide through a dedicated multi-cycle unit (stalls the pipeline until ready)
+- Forward results EX→EX and MEM→EX to avoid RAW hazards without stalling
+- Stall and flush on load-use hazards (one bubble inserted automatically)
+- Flush IF/ID and ID/EX stages on taken branches and jumps
 - Handle synchronous traps — ECALL, EBREAK, illegal instruction, misaligned access
 - Handle asynchronous hardware interrupts through the PLIC, gated by `mstatus.MIE`
+- Redirect the PC to `mtvec` on any trap or IRQ, and return with `mret`
 - Talk to memory-mapped peripherals over a simple bus (UART at `0xF000_0xxx`, PLIC at `0xF001_0xxx`)
-- Stall the pipeline cleanly during multi-cycle operations so nothing gets corrupted
 
 ---
 
 ## What it supports
 
 ### RV32I base ISA
-
 ```
 R-type : add  sub  and  or  xor  sll  srl  sra  slt  sltu
 I-type : addi andi ori  xori slli srli srai slti sltiu
@@ -43,52 +48,57 @@ CSR    : csrrw csrrs csrrc csrrwi csrrsi csrrci
 ```
 
 ### RV32M extension
-
 ```
 mul  mulh  mulhsu  mulhu
 div  divu  rem     remu
 ```
 
-### CSRs implemented
+### Hazard handling
+| Hazard type | Mechanism |
+|---|---|
+| RAW (non-load) | EX→EX and MEM→EX forwarding via `hazard_unit` |
+| Load-use RAW | 1-cycle stall + ID/EX bubble |
+| Control (branch/jump) | IF/ID and ID/EX flush on taken |
+| Trap / IRQ | Full pipeline flush + PC redirect to `mtvec` |
+| M-extension stall | Pipeline frozen until `muldiv_ready` asserts |
 
-| CSR     | Address | Notes                          |
-|---------|---------|--------------------------------|
-| mstatus | 0x300   | MIE bit controls interrupt gate |
-| mie     | 0x304   | Per-source interrupt enable     |
-| mtvec   | 0x305   | Trap vector base address        |
-| mepc    | 0x341   | Exception program counter       |
-| mcause  | 0x342   | Trap/interrupt cause            |
-| mip     | 0x344   | Interrupt pending (read-only from software, driven by PLIC) |
+### CSRs implemented
+| CSR | Address | Notes |
+|---|---|---|
+| mstatus | 0x300 | MIE bit controls interrupt gate |
+| mie | 0x304 | Per-source interrupt enable |
+| mtvec | 0x305 | Trap vector base address |
+| mepc | 0x341 | Exception program counter |
+| mcause | 0x342 | Trap/interrupt cause |
+| mip | 0x344 | Interrupt pending (read-only from software, driven by PLIC) |
 
 ---
 
 ## How it's structured
 
-```
-┌─────────────────────────────────────────────────────────┐
-│                     cpu_top.sv                          │
-│                                                         │
-│  PC → imem → decoder → control_unit                     │
-│                  ↓             ↓                        │
-│             regfile        imm_gen                      │
-│                  ↓             ↓                        │
-│                    →  ALU  ←                            │
-│                       ↓                                 │
-│                  muldiv_unit (M-ext)                    │
-│                       ↓                                 │
-│              bus → dmem / uart / plic                   │
-│                       ↓                                 │
-│                   writeback → regfile                   │
-│                                                         │
-│  Interrupt path:                                        │
-│  plic.irq_pending → irq gate → sys_trap → pc_next       │
-│  csr.mstatus_mie ──────────┘                            │
-└─────────────────────────────────────────────────────────┘
-```
+<img width="1122" height="1402" alt="4aea9060-cf07-4619-9381-4fcb8821bd0c" src="https://github.com/user-attachments/assets/fc2c7604-3e93-470c-9fe7-297e37aa1558" />
 
-The `cpu_top.sv` module is the integration point for everything.
+`cpu_top.sv` is the integration point. The major submodules are:
 
----
+| Module | Stage | Role |
+|---|---|---|
+| `pc` | IF | Program counter register |
+| `instruction_input_memory` | IF | Instruction memory |
+| `decoder` | ID | Instruction decode, field extraction |
+| `imm_gen` | ID | Immediate sign-extension |
+| `control_unit` | ID | Control signal generation |
+| `regfile` | ID/WB | 32-entry register file (write at WB, read at ID) |
+| `alu_control_unit` | EX | Maps opcode/funct fields to ALU op |
+| `alu` | EX | Main integer ALU |
+| `muldiv_unit` | EX | Multi-cycle multiply/divide |
+| `branch_unit` | EX | Branch condition evaluation |
+| `hazard_unit` | EX | Stall, flush, and forwarding control |
+| `bus` | MEM | Address decode and peripheral routing |
+| `dmem` | MEM | Data memory |
+| `uart` | MEM | UART transmitter |
+| `plic` | MEM | Platform-level interrupt controller |
+| `csr` | MEM | Control and status registers |
+| `trap` | MEM | Trap/IRQ arbitration and PC redirect |
 
 ---
 
@@ -110,15 +120,13 @@ verilator --cc --exe --build -j0 \
 gtkwave dump.fst
 ```
 
-or you can just use the bashfile
+or just use the build script:
 
 ```bash
-
-bash build.sh cpu # runs the CPU
-bash build.sh tb # runs the testbench
-bash build.sh all # runs both
-
+bash build.sh cpu   # runs the CPU
+bash build.sh tb    # runs the testbench
+bash build.sh all   # runs both
 ```
-
+```
 
 ---
