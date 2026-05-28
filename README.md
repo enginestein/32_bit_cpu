@@ -1,4 +1,3 @@
-```markdown
 ## Table of Contents
 - [What it is](#what-it-is)
 - [What it supports](#what-it-supports)
@@ -121,6 +120,3 @@ bash build.sh cpu   # runs the CPU
 bash build.sh tb    # runs the testbench
 bash build.sh all   # runs both
 ```
-```
-
----
