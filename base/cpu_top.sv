@@ -369,7 +369,7 @@ end
     logic [31:0] ex_mem_branch_target;
 
     always_ff @(posedge clk) begin
-        if (reset) begin
+        if (reset || branch_flush) begin
             ex_mem_pc             <= 32'd0;
             ex_mem_rd             <= 5'd0;
             ex_mem_rs2            <= 5'd0;
@@ -651,17 +651,19 @@ end
 
     logic [31:0] pc_normal_next;
 
-    assign pc_normal_next = (stall_w || ex_muldiv_stall) ? pc :
-                            mem_take_trap                 ? mem_pc_redirect :
-                            ex_mem_branch_taken           ? ex_mem_branch_target :
-                                                            (pc + 32'd4);
+    assign pc_normal_next = mem_take_trap            ? mem_pc_redirect  :
+                            ex_mem_branch_taken      ? ex_mem_branch_target :
+                            ex_mem_mret              ? mem_csr_rdata    :
+                            (stall_w || ex_muldiv_stall) ? pc            :
+                                                        (pc + 32'd4);
 
-    assign branch_flush = ex_mem_branch_taken || mem_take_trap;
+    assign branch_flush = ex_mem_branch_taken || mem_take_trap || ex_mem_mret;
 
     assign pc_next = pc_normal_next;
 
     // debug
 
+`ifndef SYNTHESIS
     function string alu_op_name(input logic [4:0] ctrl);
         case (ctrl)
             5'b00000: alu_op_name = "ADD";
@@ -685,6 +687,7 @@ end
             default:  alu_op_name = "???";
         endcase
     endfunction
+`endif
 
     integer cycle_cnt = 0;
 
@@ -693,6 +696,7 @@ end
             $write("%c", uart_wdata_bus[7:0]);
     end
 
+`ifndef SYNTHESIS
     always @(posedge clk) begin
         cycle_cnt++;
         $display("");
@@ -717,5 +721,6 @@ end
         $display(" REGS  x1=%0d  x2=%0d  x3=%0d", rf_u.regs[1], rf_u.regs[2], rf_u.regs[3]);
         $display("==============================================================");
     end
+`endif
 
 endmodule

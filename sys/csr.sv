@@ -26,6 +26,7 @@ module csr (
     always_comb begin
         case (csr_addr)
             12'h300: csr_rdata = mstatus;
+            12'h302: csr_rdata = mepc;       // MRET reads mepc
             12'h304: csr_rdata = mie_reg;
             12'h305: csr_rdata = mtvec;
             12'h341: csr_rdata = mepc;

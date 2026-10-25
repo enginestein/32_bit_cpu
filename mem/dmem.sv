@@ -70,7 +70,7 @@ module dmem (
 
 
     always_ff @(posedge clk) begin
-        if (we && !misaligned) begin
+        if (we && !misaligned_d) begin
             case (mem_size)
 
 
@@ -115,7 +115,7 @@ module dmem (
     always_comb begin
         rd = 32'b0;
 
-        if (re && !misaligned) begin
+        if (re && !misaligned_d) begin
             case (mem_size)
 
                 2'b00: rd = mem_signed ?

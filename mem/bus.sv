@@ -20,7 +20,7 @@ module bus (
     input  logic        re,
     input  logic [31:0] addr,
     input  logic [31:0] wdata,
-    input  logic [31:0] funct3,
+    input  logic [2:0]  funct3,
     output logic [31:0] rdata,
     output logic        misaligned,
  

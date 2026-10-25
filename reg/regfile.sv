@@ -26,8 +26,12 @@ module regfile (
 
     // 32'd0 = 32 bit wide decimal zero
 
-    assign rd1 = (rs1 == 0) ? 32'd0 : regs[rs1]; // checks if the given register is zero, if yes, then it returns 32 bit wide zero, else it returns the value of the register.
-    assign rd2 = (rs2 == 0) ? 32'd0 : regs[rs2];
+    assign rd1 = (rs1 == 0)    ? 32'd0 :
+                 (we && rs1 == rd && rd != 0) ? wd :
+                 regs[rs1];
+    assign rd2 = (rs2 == 0)    ? 32'd0 :
+                 (we && rs2 == rd && rd != 0) ? wd :
+                 regs[rs2];
     assign dbg_x1 = regs[1];
     assign dbg_x2 = regs[2];
     assign dbg_x3 = regs[3];
